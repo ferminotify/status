@@ -51,6 +51,7 @@
 		});
 
 		function update(){
+			$('.fa-sync-alt').addClass('spin');
 			// clear
 			$('#console').html('<p class="mono" style="font-size: 0.80em;">newest</p>');
 			$('#raw').text('');
@@ -92,8 +93,16 @@
 				var userID = $('<div class="userID"></div>');
 				var event = $('<div class="event"></div>');
 				// format timestamp to readable date without year or timezone and use 2 digits for month, day, hour, minute, second
+				console.log(response[i].timestamp);
 				var date = new Date(response[i].timestamp);
-				var formattedDate = (date.getMonth() + 1).toString().padStart(2, '0') + '/' + date.getDate().toString().padStart(2, '0') + ' ' + date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0') + ':' + date.getSeconds().toString().padStart(2, '0');
+				var formattedDate = date.toLocaleString('it-IT', { 
+					day: '2-digit', 
+					month: '2-digit', 
+					hour: '2-digit', 
+					minute: '2-digit', 
+					second: '2-digit', 
+					hour12: false 
+				}).replace(',', '');
 				timestamp.text(formattedDate);
 				// format type info, success, err to font awesome icons
 				if(response[i].type.toLowerCase() == 'info') type.html('<i class="fas fa-info-circle info"></i>');
@@ -133,6 +142,9 @@
 				$('#console').append(row);
 				$("#raw").text(JSON.stringify(response, null, 2));
 			}
+			setTimeout(() => {
+				$('.fa-sync-alt').removeClass('spin');
+			}, 500);
 		}
 
 		function formatTelegramTextToHtml(text) {
