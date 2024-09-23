@@ -77,6 +77,7 @@ async function getNotifierStatus() {
     const query = 'SELECT * FROM logs ORDER BY timestamp DESC';
     try {
         const result = await pool.query(query);
+        console.log(result.rows);
         return result.rows;
     } catch (error) {
         console.log(error);

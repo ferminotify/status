@@ -92,9 +92,9 @@
 				var action = $('<div class="action"></div>');
 				var userID = $('<div class="userID"></div>');
 				var event = $('<div class="event"></div>');
-				var date = new Date(response[i].timestamp);
-				// format date as dd/mm hh:mm:ss
-				timestamp.text(date.getDate() + '/' + (date.getMonth() + 1) + ' ' + date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds());
+				// format timestamp as dd/mm hh:mm:ss using substring
+				console.log(response[i].timestamp);
+				timestamp.text(response[i].timestamp.substring(8, 10) + '/' + response[i].timestamp.substring(5, 7) + ' ' + response[i].timestamp.substring(11, 19));
 				// format type info, success, err to font awesome icons
 				if(response[i].type.toLowerCase() == 'info') type.html('<i class="fas fa-info-circle info"></i>');
 				else if(response[i].type.toLowerCase() == 'success') type.html('<i class="fas fa-check-circle success"></i>');
