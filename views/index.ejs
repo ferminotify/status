@@ -92,9 +92,16 @@
 				var action = $('<div class="action"></div>');
 				var userID = $('<div class="userID"></div>');
 				var event = $('<div class="event"></div>');
-				// format timestamp to local time
-				timestamp.text(new Date(response[i].timestamp).toLocaleString());
-				console.log(response[i].timestamp);
+				var date = new Date(response[i].timestamp);
+				var formattedDate = date.toLocaleString('it-IT', { 
+					day: '2-digit', 
+					month: '2-digit', 
+					hour: '2-digit', 
+					minute: '2-digit', 
+					second: '2-digit', 
+					hour12: false 
+				}).replace(',', '');
+				timestamp.text(formattedDate);
 
 				// format type info, success, err to font awesome icons
 				if(response[i].type.toLowerCase() == 'info') type.html('<i class="fas fa-info-circle info"></i>');
