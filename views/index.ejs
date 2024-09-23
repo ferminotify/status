@@ -93,9 +93,12 @@
 				var userID = $('<div class="userID"></div>');
 				var event = $('<div class="event"></div>');
 				// format timestamp to readable date without year or timezone and use 2 digits for month, day, hour, minute, second
-				console.log(response[i].timestamp);
 				var date = new Date(response[i].timestamp);
-				var formattedDate = date.toLocaleString('it-IT', { 
+				var timezoneOffset = date.getTimezoneOffset() * 60000; // Convert minutes to milliseconds
+				// Adjust the date for the local timezone 
+				var localDate = new Date(date.getTime() - timezoneOffset);
+				// Format 
+				var formattedDate = localDate.toLocaleString('it-IT', { 
 					day: '2-digit', 
 					month: '2-digit', 
 					hour: '2-digit', 
@@ -104,6 +107,7 @@
 					hour12: false 
 				}).replace(',', '');
 				timestamp.text(formattedDate);
+
 				// format type info, success, err to font awesome icons
 				if(response[i].type.toLowerCase() == 'info') type.html('<i class="fas fa-info-circle info"></i>');
 				else if(response[i].type.toLowerCase() == 'success') type.html('<i class="fas fa-check-circle success"></i>');
