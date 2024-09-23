@@ -94,6 +94,7 @@
 				var event = $('<div class="event"></div>');
 				// format timestamp to local time
 				timestamp.text(new Date(response[i].timestamp).toLocaleString());
+				console.log(response[i].timestamp);
 
 				// format type info, success, err to font awesome icons
 				if(response[i].type.toLowerCase() == 'info') type.html('<i class="fas fa-info-circle info"></i>');
