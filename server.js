@@ -82,10 +82,23 @@ async function getNotifierStatus() {
     } catch (error) {
         console.log('[ERR] Database query failed:', error.message);
         return [{
-            timestamp: new Date(),
+            timestamp: (() => {
+                const options = {
+                    timeZone: 'Europe/Rome',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    fractionalSecondDigits: 3,
+                };
+                const parts = new Intl.DateTimeFormat('it-IT', options).formatToParts(new Date());
+                return `${parts.find(p => p.type === 'year').value}-${parts.find(p => p.type === 'month').value}-${parts.find(p => p.type === 'day').value} ${parts.find(p => p.type === 'hour').value}:${parts.find(p => p.type === 'minute').value}:${parts.find(p => p.type === 'second').value}.${String(Date.now() % 1000).padStart(3, '0')}`;
+            })(),
             type: 'err',
             action: -1,
-            evt: 'Database query failed. Check database connection.'
+            evt: '[STATUS] Database query failed. Check database connection.'
         }];
     }
 }
