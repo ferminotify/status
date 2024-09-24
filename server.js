@@ -80,7 +80,12 @@ async function getNotifierStatus() {
         //console.log(result.rows);
         return result.rows;
     } catch (error) {
-        console.log(error);
-        throw new Error('Database query failed');
+        console.log('[ERR] Database query failed:', error.message);
+        return [{
+            timestamp: new Date(),
+            type: 'err',
+            action: -1,
+            evt: 'Database query failed. Check database connection.'
+        }];
     }
 }
