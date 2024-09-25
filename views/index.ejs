@@ -23,7 +23,12 @@
 						<p id="refresh-time"></p>
 					</div>
 				</div>
-				<p class="status-container"><span id="last-data"></span><span id="status"></span></p>
+				<div class="grid-2-col" style="margin-bottom: 30px;">
+					<span id="last-data"></span><span id="status"></span>
+				</div>
+				<div class="grid-3-col" style="margin-bottom: 30px;">
+					<span id="eventi-trovati"></span><span id="telegram-inviati"></span><span id="email-inviati"></span>
+				</div>
 				<div class="title-container">
 					<h2>Console</h2>
 					<% if(logged) { %>
@@ -56,86 +61,96 @@
 			$('#console').html('<p class="mono" style="font-size: 0.80em;">newest</p>');
 			$('#raw').text('');
 			$('#refresh-time').text(new Date().toLocaleString());
-			// get data
-			var response = <%- JSON.stringify(json) %>;
-			// response is a json array
-			console.log(response);
-			// print the last data received
-			$('#last-data').text(response[0].timestamp.substring(8, 10) + '/' + response[0].timestamp.substring(5, 7) + ' ' + response[0].timestamp.substring(11, 19));
-			// if the last action is 1, then the notifier is online
-			if(response[0].action == 9){
-				console.log('Notifier is online');
-				$('#status').html('<i class="fas fa-circle success"></i> online');
-			// if the last action is -1, then the notifier has encountered an error
-			}else if(response[0].action == -1){
-				console.log('Notifier is offline');
-				$('#status').html('<i class="fas fa-exclamation-circle err"></i> offline');
-			}else{
-				console.log('Notifier is or should be running');
-				$('#status').html('<i class="fas fa-spinner info"></i> running or should be running');
-			}
-			/*
-			print every row in #console with structure
-			<div class="row">
-				<div class="timestamp"></div>
-				<div class="type"></div>
-				<div class="action"></div>
-				<div class="userID"></div>
-				<div class="event"></div>
-			</div>
-			if undefined print nothing but the tags
-			*/
-			for(var i = 0; i < response.length; i++){
-				var row = $('<div class="row"></div>');
-				var timestamp = $('<div class="timestamp"></div>');
-				var type = $('<div class="type"></div>');
-				var action = $('<div class="action"></div>');
-				var userID = $('<div class="userID"></div>');
-				var event = $('<div class="event"></div>');
-				// format timestamp as dd/mm hh:mm:ss using substring
-				//console.log(response[i].timestamp);
-				timestamp.text(response[i].timestamp.substring(8, 10) + '/' + response[i].timestamp.substring(5, 7) + ' ' + response[i].timestamp.substring(11, 19));
-				// format type info, success, err to font awesome icons
-				if(response[i].type.toLowerCase() == 'info') type.html('<i class="fas fa-info-circle info"></i>');
-				else if(response[i].type.toLowerCase() == 'success') type.html('<i class="fas fa-check-circle success"></i>');
-				else if(response[i].type.toLowerCase() == 'err') type.html('<i class="fas fa-exclamation-circle err"></i>');
-				else type.text(response[i].type);
-				// format action to icons
+			// get data from /notifier/get/status and save it in response
+			$.get('/notifier/get/status', function(response){
+				// response is a json array
+				console.log(response);
+				// print the last data received
+				$('#last-data').text(response[0].timestamp.substring(8, 10) + '/' + response[0].timestamp.substring(5, 7) + ' ' + response[0].timestamp.substring(11, 19));
+				// if the last action is 1, then the notifier is online
+				if(response[0].action == 9){
+					console.log('Notifier is online');
+					$('#status').html('<i class="fas fa-circle success"></i> online');
+				// if the last action is -1, then the notifier has encountered an error
+				}else if(response[0].action == -1){
+					console.log('Notifier is offline');
+					$('#status').html('<i class="fas fa-exclamation-circle err"></i> offline');
+				}else{
+					console.log('Notifier is or should be running');
+					$('#status').html('<i class="fas fa-spinner info"></i> running or should be running');
+				}
 				/*
-				action (int): action of the log.
-				action int guide:
-					0. Start
-					1. Checking
-					2. Found event
-					3. Sent telegram message
-					9. End success
-					-1. Error
+				print every row in #console with structure
+				<div class="row">
+					<div class="timestamp"></div>
+					<div class="type"></div>
+					<div class="action"></div>
+					<div class="userID"></div>
+					<div class="event"></div>
+				</div>
+				if undefined print nothing but the tags
 				*/
-				if(response[i].action == 0) action.html('<i class="fas fa-play-circle info"></i>');
-				else if(response[i].action == 1) action.html('<i class="fas fa-spinner info"></i>');
-				else if(response[i].action == 2) action.html('<i class="fas fa-search info"></i>');
-				else if(response[i].action == 3) action.html('<i class="fas fa-paper-plane info"></i>');
-				else if(response[i].action == 9) action.html('<i class="fas fa-circle success"></i>');
-				else if(response[i].action == -1) action.html('<i class="fa-solid fa-database err"></i>');
-				else action.text(response[i].action);
-				userID.text(response[i].user_id);
-				event.text(response[i].evt);
+				var eventi_trovati = 0;
+				var telegram_inviati = 0;
+				for(var i = 0; i < response.length; i++){
+					var row = $('<div class="row"></div>');
+					var timestamp = $('<div class="timestamp"></div>');
+					var type = $('<div class="type"></div>');
+					var action = $('<div class="action"></div>');
+					var userID = $('<div class="userID"></div>');
+					var event = $('<div class="event"></div>');
+					// format timestamp as dd/mm hh:mm:ss using substring
+					//console.log(response[i].timestamp);
+					timestamp.text(response[i].timestamp.substring(8, 10) + '/' + response[i].timestamp.substring(5, 7) + ' ' + response[i].timestamp.substring(11, 19));
+					// format type info, success, err to font awesome icons
+					if(response[i].type.toLowerCase() == 'info') type.html('<i class="fas fa-info-circle info"></i>');
+					else if(response[i].type.toLowerCase() == 'success') type.html('<i class="fas fa-check-circle success"></i>');
+					else if(response[i].type.toLowerCase() == 'err') type.html('<i class="fas fa-exclamation-circle err"></i>');
+					else type.text(response[i].type);
+					// format action to icons
+					/*
+					action (int): action of the log.
+					action int guide:
+						0. Start
+						1. Checking
+						2. Found event
+						3. Sent telegram message
+						9. End success
+						-1. Error
+					*/
+					if(response[i].action == 0) action.html('<i class="fas fa-play-circle info"></i>');
+					else if(response[i].action == 1) action.html('<i class="fas fa-spinner info"></i>');
+					else if(response[i].action == 2){
+						action.html('<i class="fas fa-search info"></i>');
+						eventi_trovati++;
+					}
+					else if(response[i].action == 3){
+						action.html('<i class="fas fa-paper-plane info"></i>');
+						telegram_inviati++;
+					}
+					else if(response[i].action == 9) action.html('<i class="fas fa-circle success"></i>');
+					else if(response[i].action == -1) action.html('<i class="fa-solid fa-database err"></i>');
+					else action.text(response[i].action);
+					userID.text(response[i].user_id);
+					event.text(response[i].evt);
 
-				row.append(timestamp);
-				row.append(type);
-				row.append(action);
-				row.append(userID);
-				// if event is telegram message, format the text to html
-				<% if(logged) { %>
-					if(response[i].action == 3) event.html(formatTelegramTextToHtml(event.text()));
-				<% } %>
-				row.append(event);
-				$('#console').append(row);
-				$("#raw").text(JSON.stringify(response, null, 2));
-			}
-			setTimeout(() => {
+					row.append(timestamp);
+					row.append(type);
+					row.append(action);
+					row.append(userID);
+					// if event is telegram message, format the text to html
+					<% if(logged) { %>
+						if(response[i].action == 3) event.html(formatTelegramTextToHtml(event.text()));
+					<% } %>
+					row.append(event);
+					$('#console').append(row);
+					$("#raw").text(JSON.stringify(response, null, 2));
+				}
+				$('#eventi-trovati').html('<i class="fas fa-search info"></i> ' + eventi_trovati);
+				$('#telegram-inviati').html('<i class="fas fa-paper-plane info"></i> ' + telegram_inviati);
+				$('#email-inviati').html('<i class="fas fa-envelope info"></i> <i class="fas fa-circle err"></i>');
 				$('.fa-sync-alt').removeClass('spin');
-			}, 500);
+			});
 		}
 
 		function formatTelegramTextToHtml(text) {

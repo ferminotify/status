@@ -81,11 +81,17 @@ html {
 	justify-content: space-between;
 }
 
-.status-container {
-	display: flex;
-	flex-direction: row;
-	justify-content: space-around;
-	gap: 10px;
+.grid-2-col {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	place-items: center;
+	gap: 15px;
+}
+.grid-3-col {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+	place-items: center;
+	gap: 15px;
 }
 
 .console-container {

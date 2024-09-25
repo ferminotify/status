@@ -24,19 +24,23 @@ app.get('/', async (req, res) => {
     try {
         const success = req.flash('success');
         const error = req.flash('error');
-        const json = await getNotifierStatus();
-        if(!req.session.isAuthenticated) {
-            // for each json row, if status is 2 (found evt) or 3 (telegram) censor evt
-            json.forEach(row => {
-                if (row.user_id) row.user_id = '***';
-                if (row.action === 3 || row.action === 2) row.evt = '*** log in to see event ***';
-            });
-        }
-        res.render('index', { json, logged: req.session.isAuthenticated, success, error });
+        res.render('index', { logged: req.session.isAuthenticated, success, error });
     } catch (error) {
         console.log(error);
         res.status(500).send('Internal server error');
     }
+});
+
+app.get('/notifier/get/status', async (req, res) => {
+    const json = await getNotifierStatus();
+    if(!req.session.isAuthenticated) {
+        // for each json row, if status is 2 (found evt) or 3 (telegram) censor evt
+        json.forEach(row => {
+            if (row.user_id) row.user_id = '***';
+            if (row.action === 3 || row.action === 2) row.evt = '*** log in to see event ***';
+        });
+    }
+    res.json(json);
 });
 
 app.post('/login', (req, res) => {
