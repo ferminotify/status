@@ -108,10 +108,15 @@ a{
 	grid-template-columns: 1fr 1fr;
 	place-items: center;
 }
-.grid-3-col {
-	display: grid;
-	grid-template-columns: 1fr 1fr 1fr;
-	place-items: center;
+.grid-2-col.no-mobile{
+	display: grid !important;
+	grid-template-columns: 1fr 1fr !important;
+	place-items: center !important;
+}
+.grid-3-col.no-mobile{
+	display: grid !important;
+	grid-template-columns: 1fr 1fr 1fr !important;
+	place-items: center	!important;
 }
 .grid-2-row{
 	display: grid;
@@ -126,6 +131,10 @@ a{
 .flex-space-between {
 	display: flex;
 	justify-content: space-between;
+}
+.flex-space-around{
+	display: flex;
+	justify-content: space-around;
 }
 .flex-center{
 	display: flex;
@@ -144,6 +153,9 @@ a{
 .square-inner p{
 	margin: 0;
 	line-height: 1.5;
+}
+.mirror .square-container{
+	border-top: none;
 }
 
 .console-container {
@@ -191,18 +203,20 @@ a{
 }
 .in-console *{
 	width: 100%;
-	padding: 15px 0;
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	cursor: pointer;
 }
-.in-console *:nth-child(1){
+.choose-console *:nth-child(1){
 	border-right: 1px solid white;
 }
-.in-console *.active{
+.choose-console *.active{
 	background-color: var(--primary);
 	color: var(--on-surface);
+}
+.choose-console *{
+	padding: 10px 0;
+	cursor: pointer;
 }
 
 .info {
@@ -380,6 +394,10 @@ button.btn.outlined {
 	}
 	.mirror, .mirror .square-container, .mirror .square-inner{
 		height: 100%;
+		border-right: none;
+	}
+	.mirror .square-container{
+		border-top: 1px solid var(--on-surface);
 	}
 	.mirror{
 		direction: ltr;
@@ -392,6 +410,9 @@ button.btn.outlined {
 	}
 	.mirror .square-inner .grid-2-col{
 		gap: 0;
+	}
+	.summary{
+		direction: ltr;
 	}
 	.domain{
 		height: 25px;

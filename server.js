@@ -56,6 +56,55 @@ app.get('/notifier/get/status', async (req, res) => {
     res.json(json);
 });
 
+app.get('/webapp/get/stats', async (req, res) => {
+    // return total number of logs for each domain
+    const dayBefore = req.query.dayBefore || -1;
+    var query = "SELECT COALESCE(domain, 'unknown') AS domain, COUNT(*) AS count FROM webapp_stats";
+    if (dayBefore >= 0) {
+        const date = new Date();
+        date.setDate(date.getDate() - dayBefore);
+        const options = {
+            timeZone: 'Europe/Rome',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            fractionalSecondDigits: 3,
+        };
+        const parts = new Intl.DateTimeFormat('it-IT', options).formatToParts(date);
+        const dateStr = `${parts.find(p => p.type === 'year').value}-${parts.find(p => p.type === 'month').value}-${parts.find(p => p.type === 'day').value}`;
+        query += ` WHERE timestamp::date = '${dateStr}'`;
+    }
+    query += ' GROUP BY domain';
+    try {
+        const result = await pool.query(query);
+        const domainCounts = {};
+        result.rows.forEach(row => {
+          domainCounts[row.domain] = row.count;
+        });
+        res.json(domainCounts);
+    } catch (error) {
+        console.log('[ERR] Database query failed:', error.message);
+        res.json([]);
+    }
+});
+
+app.get("/webapp/get/logs", async (req, res) => {
+    // get params backup = true
+    const limit = req.query.limit || -1;
+    // 0 = today, 1 = yesterday, 2 = day before, ..., -1 = all
+    const dayBefore = req.query.dayBefore || -1;
+    const json = await getWebappLogs(limit, dayBefore);
+    if(!req.session.isAuthenticated) {
+        json.forEach(row => {
+            if (row.type == "info" || row.type == "error") row.message = '*** log in to see event ***';
+        });
+    }
+    res.json(json);
+});
+
 app.post('/login', (req, res) => {
     const psw = req.body.password;
     console.log("Sent: " + psw);
@@ -89,10 +138,8 @@ app.listen(PORT, () => {
 	console.log(`Server running on port ${PORT}`);
 });
 
-// Function to get the notifier status
-async function getNotifierStatus(backup = false, limit = -1, dayBefore = -1) {
-    var query = backup ? 'SELECT * FROM logs_backup_notifier' : 'SELECT * FROM logs_notifier';
-    if (limit > 0) query += ` LIMIT ${limit}`;
+async function getWebappLogs(limit = -1, dayBefore = -1) {
+    var query = 'SELECT * FROM logs_webapp';
     if (dayBefore >= 0) {
         const date = new Date();
         date.setDate(date.getDate() - dayBefore);
@@ -111,6 +158,38 @@ async function getNotifierStatus(backup = false, limit = -1, dayBefore = -1) {
         query += ` WHERE timestamp::date = '${dateStr}'`;
     }
     query += ' ORDER BY timestamp DESC';
+    if (limit > 0) query += ` LIMIT ${limit}`;
+    try {
+        const result = await pool.query(query);
+        return result.rows;
+    } catch (error) {
+        console.log('[ERR] Database query failed:', error.message);
+        return [{ timestamp: new Date(), type: 'error', message: '[STATUS] Database query failed. Check database connection.' }];
+    }
+}
+
+// Function to get the notifier status
+async function getNotifierStatus(backup = false, limit = -1, dayBefore = -1) {
+    var query = backup ? 'SELECT * FROM logs_backup_notifier' : 'SELECT * FROM logs_notifier';
+    if (dayBefore >= 0) {
+        const date = new Date();
+        date.setDate(date.getDate() - dayBefore);
+        const options = {
+            timeZone: 'Europe/Rome',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            fractionalSecondDigits: 3,
+        };
+        const parts = new Intl.DateTimeFormat('it-IT', options).formatToParts(date);
+        const dateStr = `${parts.find(p => p.type === 'year').value}-${parts.find(p => p.type === 'month').value}-${parts.find(p => p.type === 'day').value}`;
+        query += ` WHERE timestamp::date = '${dateStr}'`;
+    }
+    query += ' ORDER BY timestamp DESC';
+    if (limit > 0) query += ` LIMIT ${limit}`;
     try {
         const result = await pool.query(query);
         //console.log(result.rows);

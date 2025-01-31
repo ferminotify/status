@@ -34,12 +34,11 @@
 	}
 
 	function update(backup = false){
-		// clear
-		$('#notifier-console').html('<p class="mono" style="font-size: 0.80em; margin-top:0">newest</p>');
 		// get data from /notifier/get/status and save it in response
 		var dayBefore = 0;
-		var getUrl = '/notifier/get/status?dayBefore=' + dayBefore;
-		if (backup) getUrl += '&backup=true';
+		var getUrl = '/notifier/get/status?';
+		if (backup) getUrl += 'backup=true';
+		else getUrl += 'dayBefore=' + dayBefore;
 		$.get(getUrl, function(response){
 			// response is a json array
 			console.log(response);
@@ -66,12 +65,17 @@
 					console.log('Notifier is offline');
 					setOffline();
 				}else{
-					console.log('Notifier is or should be running');
-					$('#status').html('<i class="fas fa-spinner info"></i> running or should be running');
+					console.log('Notifier is running');
+					$('#status').html('<i class="fas fa-spinner info"></i> running');
 					$('#status').parent().addClass('surface-variant');
 				}
 			}
-			
+
+			var newestHTML = '<p class="mono" style="font-size: 0.80em; margin-top:0">';
+			if(backup) newestHTML += 'last ' + date.toLocaleString('it-IT', { year: 'numeric', month: 'long', day: 'numeric' });
+			else newestHTML += 'newest';
+			newestHTML += '</p>';
+			$('#notifier-console').html(newestHTML);
 			
 			for(var i = 0; i < response.length; i++){
 				var row = $('<div class="row"></div>');

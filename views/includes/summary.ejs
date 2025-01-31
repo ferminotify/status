@@ -1,14 +1,98 @@
+<style>
+	#domain-counter::-webkit-scrollbar{
+		display: none;
+	}
+	#domain-counter{
+		width: 100%;
+		overflow-y: hidden;
+		padding: 0 15px;
+	}
+	.domain-count-container {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: relative;
+		height: calc(2rem + 5px);
+		padding: 0 15px;
+	}
+	.domain-name{
+		color: var(--muted);
+		font-size: 0.8rem;
+		font-weight: 700;
+		text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+		z-index: 2;
+	}
+	.domain-name:hover{
+		color: var(--on-surface);
+	}
+	.domain-count-container .count {
+		position: absolute;
+		font-size: 2rem;
+		font-weight: 700;
+		color: var(--on-surface-primary);
+		opacity: 0.7;
+		z-index: 1;
+		text-shadow: 2px 2px 4px #000, -2px -2px 4px #000, 2px -2px 4px #000, -2px 2px 4px #000;
+	}
+</style>
 <div class="grid-2-row-1fr-auto" style="height: 100%;">
 	<div class="console-container" style="height: 100%;">
-		<div class="console" style="width: 100%;"></div>
+		<div id="webapp-console" class="console" style="width: 100%;"></div>
 	</div>
-	<div class="console-container">
-		<div class="in-console flex-space-between">
-			webapp access stats WIP
+	<div class="console-container" style="border-top: none;">
+		<div class="in-console flex-space-around" id="domain-counter">
 		</div>
 	</div>
 </div>
 <script>
-	// webapp last logs
-	// TODO
+	// get webapp stats
+	$.get('/webapp/get/stats?dayBefore=0', function(response){
+		domains = ["fn.lkev.in", "ferminotify.lkev.in", "ferminotify.sirico.dev"];
+		for(domain of domains){
+			var domain_name_span = document.createElement('span');
+			domain_name_span.classList.add('domain-name');
+			domain_name_span.innerText = domain;
+			var domain_count_span = document.createElement('span');
+			domain_count_span.classList.add('count');
+			domain_count_span.innerText = response[domain] || "0";
+			var domain_count_container = document.createElement('div');
+			domain_count_container.classList.add('domain-count-container');
+			domain_count_container.appendChild(domain_name_span);
+			domain_count_container.appendChild(domain_count_span);
+			document.getElementById('domain-counter').appendChild(domain_count_container);
+		}
+	});
+
+	var options = {timeZone: 'Europe/Rome', hour: '2-digit', minute: '2-digit', second: '2-digit'};
+	// get console logs
+	function updateWebapp(){
+		$('#webapp-console').html('<p class="mono" style="font-size: 0.80em; margin-top:0">newest</p>');
+		$.get('/webapp/get/logs?limit=50', function(response){
+			for(var i = 0; i < response.length; i++){
+				var row = $('<div class="row"></div>');
+				var timestamp = $('<div class="timestamp"></div>');
+				var type = $('<div class="type"></div>');
+				var message = $('<div class="event"></div>');
+				// format timestamp as dd/mm hh:mm:ss
+				//console.log(response[i].timestamp);
+				// convert timestamp format aaaa-mm-ggThh:mm:ss.sssZ to hh:mm:ss Rome time
+				var date = new Date(response[i].timestamp);
+				timestamp.text(date.toLocaleString('it-IT', options));
+				// format type info, success, erro to font awesome icons
+				if(response[i].type.toLowerCase() == 'info') type.html('<i class="fas fa-info-circle info"></i>');
+				else if(response[i].type.toLowerCase() == 'success') type.html('<i class="fas fa-check-circle success"></i>');
+				else if(response[i].type.toLowerCase() == 'error') type.html('<i class="fas fa-exclamation-circle error"></i>');
+				else type.text(response[i].type);
+				message.text(response[i].message);
+
+				row.append(timestamp);
+				row.append(type);
+				row.append(message);
+				$('#webapp-console').append(row);
+			}
+		});
+	}
+	$(document).ready(function(){
+		updateWebapp();
+	});
 </script>
