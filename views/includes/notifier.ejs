@@ -1,6 +1,6 @@
 <style>
 	/* hide console scrollbar */
-	.console-container::-webkit-scrollbar {
+	.console::-webkit-scrollbar {
 		display: none;
 	}
 </style>
@@ -11,7 +11,9 @@
 			<div class="active" onclick="changeLogs(this)">Logs</div>
 			<div class="" onclick="changeLogs(this)">Backup</div>
 		</div>
-		<div class="console" id="notifier-console" style="width: 100%; height: auto;"></div>
+		<div>
+			<div class="console" id="notifier-console" style="width: 100%; height: auto;"></div>
+		</div>
 	</div>
 	<div class="console-container grid-2-col" style="text-align: center; gap:0">
 		<div style="width: 100%; padding: 10px 0; border-right: 1px solid var(--on-surface);"><span id="status"></span></div>

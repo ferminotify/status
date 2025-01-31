@@ -17,8 +17,8 @@
 </head>
 <body>
 	<div class="container" style="width: 100%; height: 100dvh;">
-		<div class="grid-2-col" style="height: 100%; margin: 15px; gap: 15px;">
-			<div class="grid-2-row-1fr-auto" style="height: 100%; width: 100%;">
+		<div class="grid-2-col container-2-block" style="height: 100%; margin: 15px; gap: 15px;">
+			<div class="grid-2-row-1fr-auto webapp" style="height: 100%; width: 100%;">
 				<div class="summary" style="width: 100%; height: 100%;">
 					<%- include('includes/summary.ejs'); %>	
 				</div>
@@ -59,5 +59,26 @@
 			</script>
 		<% }) %>
 	<% } %>
+
+	
+<script>
+	// device width smaller than 830px
+	var mirror_open = false;
+	// onclick on .mirror --> show all .domain span slide left to right
+	$('.mirror').click(function() {
+		if (window.innerWidth < 830) {
+			$('.domain span').animate({width: 'toggle'}, 350);
+			mirror_open = !mirror_open;
+		}
+	});
+	$('.summary').click(function() {
+		if (window.innerWidth < 830) {
+			if (mirror_open) {
+				$('.domain span').animate({width: 'toggle'}, 350);
+				mirror_open = !mirror_open;
+			}
+		}
+	});
+</script>
 </body>
 </html>
