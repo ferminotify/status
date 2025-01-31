@@ -24,7 +24,18 @@ app.get('/', async (req, res) => {
     try {
         const success = req.flash('success');
         const error = req.flash('error');
-        res.render('index', { logged: req.session.isAuthenticated, success, error });
+        res.render('index.ejs', { logged: req.session.isAuthenticated, success, error });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Internal server error');
+    }
+});
+
+app.get('/backup', async (req, res) => {
+    try {
+        const success = req.flash('success');
+        const error = req.flash('error');
+        res.render('backup.ejs', { logged: req.session.isAuthenticated, success, error });
     } catch (error) {
         console.log(error);
         res.status(500).send('Internal server error');
@@ -34,10 +45,18 @@ app.get('/', async (req, res) => {
 app.get('/notifier/get/status', async (req, res) => {
     const json = await getNotifierStatus();
     if(!req.session.isAuthenticated) {
-        // for each json row, if status is 2 (found evt) or 3 (telegram) censor evt
         json.forEach(row => {
-            if (row.user_id) row.user_id = '***';
-            if (row.action === 3 || row.action === 2) row.evt = '*** log in to see event ***';
+            if (row.info) row.message = '*** log in to see event ***';
+        });
+    }
+    res.json(json);
+});
+
+app.get('/notifier/get/backup-status', async (req, res) => {
+    const json = await getNotifierStatus(true);
+    if(!req.session.isAuthenticated) {
+        json.forEach(row => {
+            if (row.info) row.message = '*** log in to see event ***';
         });
     }
     res.json(json);
@@ -59,7 +78,7 @@ app.post('/login', (req, res) => {
             req.flash('success', 'Loggato 😎');
             return res.redirect('/'); // Redirect to the home page
         } else {
-            req.flash('error', 'Wrong password');
+            req.flash('error', 'Password errata');
             return res.redirect('/');
         }
     });
@@ -77,8 +96,8 @@ app.listen(PORT, () => {
 });
 
 // Function to get the notifier status
-async function getNotifierStatus() {
-    const query = 'SELECT * FROM logs ORDER BY timestamp DESC';
+async function getNotifierStatus(backup = false) {
+    const query = backup ? 'SELECT * FROM logs_backup_notifier ORDER BY timestamp DESC' : 'SELECT * FROM logs_notifier ORDER BY timestamp DESC';
     try {
         const result = await pool.query(query);
         //console.log(result.rows);
@@ -100,9 +119,8 @@ async function getNotifierStatus() {
                 const parts = new Intl.DateTimeFormat('it-IT', options).formatToParts(new Date());
                 return `${parts.find(p => p.type === 'year').value}-${parts.find(p => p.type === 'month').value}-${parts.find(p => p.type === 'day').value} ${parts.find(p => p.type === 'hour').value}:${parts.find(p => p.type === 'minute').value}:${parts.find(p => p.type === 'second').value}.${String(Date.now() % 1000).padStart(3, '0')}`;
             })(),
-            type: 'err',
-            action: -1,
-            evt: '[STATUS] Database query failed. Check database connection.'
+            type: 'error',
+            message: '[STATUS] Database query failed. Check database connection.'
         }];
     }
 }

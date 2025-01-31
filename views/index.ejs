@@ -26,6 +26,7 @@
 				<div class="grid-2-col" style="margin-bottom: 30px;">
 					<span id="last-data"></span><span id="status"></span>
 				</div>
+				<!-- TODO to be implemented with API -->
 				<div class="grid-3-col" style="margin-bottom: 30px;">
 					<span id="eventi-trovati"></span><span id="telegram-inviati"></span><span id="email-inviati"></span>
 				</div>
@@ -44,6 +45,10 @@
 				</div>
 			</div>
 			<div class="console-container">
+				<div class="choose-console flex-space-between">
+					<div class="active" onclick="changeLogs(this)">Logs</div>
+					<div class="" onclick="changeLogs(this)">Backup</div>
+				</div>
 				<div id="console"></div>
 			</div>
 			<p>Raw Data <button class="btn text" onclick="$('#raw-container').slideToggle(); if($(this).text() == 'Show') $(this).text('Hide'); else $(this).text('Show')"><u>Show</u></button></p>
@@ -55,24 +60,38 @@
 			update();
 		});
 
-		function update(){
+		function changeLogs(el){
+			$('.choose-console div').removeClass('active');
+			$(el).addClass('active');
+			if(el.innerText == 'Logs') update('status');
+			else update('backup-status');
+		}
+
+		function update(con = 'status'){
 			$('.fa-sync-alt').addClass('spin');
 			// clear
 			$('#console').html('<p class="mono" style="font-size: 0.80em;">newest</p>');
 			$('#raw').text('');
 			$('#refresh-time').text(new Date().toLocaleString());
 			// get data from /notifier/get/status and save it in response
-			$.get('/notifier/get/status', function(response){
+			var getUrl = "/notifier/get/" + con;
+			$.get(getUrl, function(response){
 				// response is a json array
 				console.log(response);
 				// print the last data received
-				$('#last-data').text(response[0].timestamp.substring(8, 10) + '/' + response[0].timestamp.substring(5, 7) + ' ' + response[0].timestamp.substring(11, 19));
+				var date = new Date(response[0].timestamp);
+
+
+				var options = {timeZone: 'Europe/Rome', hour: '2-digit', minute: '2-digit', second: '2-digit'};
+				
+				
+				$('#last-data').text(date.toLocaleString('it-IT', options));
 				// if the last action is 1, then the notifier is online
-				if(response[0].action == 9){
+				if(response[0].type == "success"){
 					console.log('Notifier is online');
 					$('#status').html('<i class="fas fa-circle success"></i> online');
 				// if the last action is -1, then the notifier has encountered an error
-				}else if(response[0].action == -1){
+				}else if(response[0].type == "error"){
 					console.log('Notifier is offline');
 					$('#status').html('<i class="fas fa-exclamation-circle err"></i> offline');
 				}else{
@@ -90,65 +109,35 @@
 				</div>
 				if undefined print nothing but the tags
 				*/
-				var eventi_trovati = 0;
-				var telegram_inviati = 0;
+				var eventi_trovati = "N/A"; // TODO
+				var telegram_inviati = "N/A"; // TODO
+				var email_inviati = "N/A"; // TODO
 				for(var i = 0; i < response.length; i++){
 					var row = $('<div class="row"></div>');
 					var timestamp = $('<div class="timestamp"></div>');
 					var type = $('<div class="type"></div>');
-					var action = $('<div class="action"></div>');
-					var userID = $('<div class="userID"></div>');
-					var event = $('<div class="event"></div>');
-					// format timestamp as dd/mm hh:mm:ss using substring
+					var message = $('<div class="event"></div>');
+					// format timestamp as dd/mm hh:mm:ss
 					//console.log(response[i].timestamp);
-					timestamp.text(response[i].timestamp.substring(8, 10) + '/' + response[i].timestamp.substring(5, 7) + ' ' + response[i].timestamp.substring(11, 19));
+					// convert timestamp format aaaa-mm-ggThh:mm:ss.sssZ to hh:mm:ss Rome time
+					var date = new Date(response[i].timestamp);
+					timestamp.text(date.toLocaleString('it-IT', options));
 					// format type info, success, err to font awesome icons
 					if(response[i].type.toLowerCase() == 'info') type.html('<i class="fas fa-info-circle info"></i>');
 					else if(response[i].type.toLowerCase() == 'success') type.html('<i class="fas fa-check-circle success"></i>');
-					else if(response[i].type.toLowerCase() == 'err') type.html('<i class="fas fa-exclamation-circle err"></i>');
+					else if(response[i].type.toLowerCase() == 'error') type.html('<i class="fas fa-exclamation-circle err"></i>');
 					else type.text(response[i].type);
-					// format action to icons
-					/*
-					action (int): action of the log.
-					action int guide:
-						0. Start
-						1. Checking
-						2. Found event
-						3. Sent telegram message
-						9. End success
-						-1. Error
-					*/
-					if(response[i].action == 0) action.html('<i class="fas fa-play-circle info"></i>');
-					else if(response[i].action == 1) action.html('<i class="fas fa-spinner info"></i>');
-					else if(response[i].action == 2){
-						action.html('<i class="fas fa-search info"></i>');
-						eventi_trovati++;
-					}
-					else if(response[i].action == 3){
-						action.html('<i class="fas fa-paper-plane info"></i>');
-						telegram_inviati++;
-					}
-					else if(response[i].action == 9) action.html('<i class="fas fa-circle success"></i>');
-					else if(response[i].action == -1) action.html('<i class="fa-solid fa-database err"></i>');
-					else action.text(response[i].action);
-					userID.text(response[i].user_id);
-					event.text(response[i].evt);
+					message.text(response[i].message);
 
 					row.append(timestamp);
 					row.append(type);
-					row.append(action);
-					row.append(userID);
-					// if event is telegram message, format the text to html
-					<% if(logged) { %>
-						if(response[i].action == 3) event.html(formatTelegramTextToHtml(event.text()));
-					<% } %>
-					row.append(event);
+					row.append(message);
 					$('#console').append(row);
 					$("#raw").text(JSON.stringify(response, null, 2));
 				}
 				$('#eventi-trovati').html('<i class="fas fa-search info"></i> ' + eventi_trovati);
 				$('#telegram-inviati').html('<i class="fas fa-paper-plane info"></i> ' + telegram_inviati);
-				$('#email-inviati').html('<i class="fas fa-envelope info"></i> <i class="fas fa-circle err"></i>');
+				$('#email-inviati').html('<i class="fas fa-envelope info"></i> ' + email_inviati);
 				$('.fa-sync-alt').removeClass('spin');
 			});
 		}

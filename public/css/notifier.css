@@ -93,6 +93,10 @@ html {
 	place-items: center;
 	gap: 15px;
 }
+.flex-space-between {
+	display: flex;
+	justify-content: space-between;
+}
 
 .console-container {
 	max-height: 75vh;
@@ -131,6 +135,25 @@ html {
 
 #console .userID {
 	font-weight: 700;
+}
+
+.choose-console {
+	background-color: var(--surface);
+}
+.choose-console *{
+	width: 100%;
+	padding: 15px 0;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-bottom: 1px solid white;
+}
+.choose-console *:nth-child(1){
+	border-right: 1px solid white;
+}
+.choose-console *.active{
+	background-color: var(--primary);
+	color: var(--on-surface);
 }
 
 .info {
