@@ -1,0 +1,172 @@
+<div class="square-container" style="width: 100%;" id="domini">
+	<div class="square-inner">
+		<div class="grid-2-col" style="line-height: 2; place-items: start;">
+			<div class="domain">
+				<div class="dot verifying" id="ferminotify-me" title="Verifica in corso"></div>
+				<span class="material-space-right">ferminotify.me</span>
+				<a href="//ferminotify.me" class="btn text"><span class="material-symbols-outlined">open_in_new</span></a>
+			</div>
+			<div class="domain">
+				<div class="dot verifying" id="fn-lkev-in" title="Verifica in corso"></div>
+				<span class="material-space-right">fn.lkev.in</span>
+				<a href="//fn.lkev.in" class="btn text"><span class="material-symbols-outlined">open_in_new</span></a>
+			</div>
+			<div class="domain">
+				<div class="dot verifying" id="ferminotify-lkev-in" title="Verifica in corso"></div>
+				<span class="material-space-right">ferminotify.lkev.in</span>
+				<a href="//ferminotify.lkev.in" class="btn text"><span class="material-symbols-outlined">open_in_new</span></a>
+			</div>
+			<div class="domain">
+				<div class="dot verifying" id="ferminotify-sirico-dev" title="Verifica in corso"></div>
+				<span class="material-space-right">ferminotify.sirico.dev</span>
+				<a href="//ferminotify.sirico.dev" class="btn text"><span class="material-symbols-outlined">open_in_new</span></a>
+			</div>
+		</div>
+		<div class="grid-2-col" style="padding-top: 0.83em; line-height: 2; place-items: start;">
+			<div class="domain">
+				<div class="dot verifying" id="old-ferminotify-me" title="Verifica in corso"></div>
+				<span class="material-space-right">old.ferminotify.me</span>
+				<a href="//old.ferminotify.me" class="btn text"><span class="material-symbols-outlined">open_in_new</span></a>
+			</div>
+			<div class="domain">
+				<div class="dot verifying" id="old-fn-lkev-in" title="Verifica in corso"></div>
+				<span class="material-space-right">old.fn.lkev.in</span>
+				<a href="//old.fn.lkev.in" class="btn text"><span class="material-symbols-outlined">open_in_new</span></a>
+			</div>
+		</div>
+		<div class="grid-2-col" style="padding-top: 0.83em; line-height: 2; place-items: start;">
+			<div class="domain">
+				<div class="dot verifying" id="api-ferminotify-me" title="Verifica in corso"></div>
+				<span class="material-space-right">api.ferminotify.me</span>
+				<a href="//api.ferminotify.me" class="btn text"><span class="material-symbols-outlined">open_in_new</span></a>
+			</div>
+			<div class="domain">
+				<div class="dot verifying" id="api-fn-lkev-in" title="Verifica in corso"></div>
+				<span class="material-space-right">api.fn.lkev.in</span>
+				<a href="//api.fn.lkev.in" class="btn text"><span class="material-symbols-outlined">open_in_new</span></a>
+			</div>
+		</div>
+	</div>
+</div>
+<div id="tooltip" class="invisible"></div>
+<script>
+	// 100% mon codé (https://codepen.io/JulienBorgeon/pen/WNqevgg) (vive la revolution!)
+
+	// Récupère l'élément tooltip à partir de son ID
+	const tooltip = document.getElementById('tooltip');
+
+	// Vérifie si l'élément tooltip existe
+	if (tooltip) {
+	// Variables pour suivre les coordonnées de la souris et du tooltip
+	let mouseX = 0;
+	let mouseY = 0;
+	let tooltipX = 0;
+	let tooltipY = 0;
+
+	// Fonction pour mettre à jour la position du tooltip avec un décalage fluide
+	function updateTooltipPosition() {
+		// Interpolation pour mouvement fluide
+		tooltipX += (mouseX - tooltipX) * 0.17;
+		tooltipY += (mouseY - tooltipY) * 0.17;
+
+		// Met à jour les styles de position du tooltip
+		tooltip.style.top = tooltipY + 'px';
+		tooltip.style.left = tooltipX + 'px';
+
+		// Demande au navigateur d'appeler cette fonction avant le prochain repaint
+		requestAnimationFrame(updateTooltipPosition);
+	}
+
+	// Lance la mise à jour continue de la position du tooltip
+	requestAnimationFrame(updateTooltipPosition);
+
+	// Événement pour gérer le survol de la souris sur un élément avec un attribut title
+	document.addEventListener('mouseover', function(e) {
+		if (e.target.hasAttribute('title')) {
+		// Récupère la valeur de l'attribut title
+		const title = e.target.getAttribute('title');
+		// Stocke la valeur de title dans un nouvel attribut data-original-title
+		e.target.setAttribute('data-original-title', title);
+		// Supprime l'attribut title pour éviter l'info-bulle par défaut du navigateur
+		e.target.removeAttribute('title');
+		}
+	});
+
+	// Événement pour gérer le déplacement de la souris sur la page
+	document.addEventListener('mousemove', function(e) {
+		// Met à jour les coordonnées de la souris avec un léger décalage
+		//mouseX = e.clientX + 12; // Ajuster la valeur ici pour la distance horizontale
+		mouseY = e.clientY + window.scrollY - 30; // Ajuster la valeur ici pour la distance verticale
+		mouseX = e.clientX - 85; // boh je m'appelle Kevin
+
+		// Vérifie si l'élément sous la souris possède un attribut data-original-title
+		if (e.target.hasAttribute('data-original-title')) {
+		// Récupère la valeur de l'attribut data-original-title
+		const title = e.target.getAttribute('data-original-title');
+		// Affiche le contenu de data-original-title dans le tooltip
+		tooltip.innerHTML = title;
+		// Rend le tooltip visible
+		tooltip.classList.remove('invisible');
+		} else {
+		// Cache le tooltip si l'élément sous la souris n'a pas data-original-title
+		tooltip.classList.add('invisible');
+		}
+	});
+
+	// Événement pour gérer la sortie de la souris d'un élément
+	document.addEventListener('mouseout', function(e) {
+		if (e.target.hasAttribute('data-original-title')) {
+		// Récupère la valeur de data-original-title
+		const title = e.target.getAttribute('data-original-title');
+		// Restaure l'attribut title avec la valeur originale
+		e.target.setAttribute('title', title);
+		// Supprime l'attribut data-original-title
+		e.target.removeAttribute('data-original-title');
+		}
+		// Cache le tooltip lorsque la souris quitte l'élément
+		tooltip.classList.add('invisible');
+	});
+	} else {
+		console.error('Aucun élément Tooltip ciblé. Enjambement!');
+	}
+</script>
+<script>
+	// new logic with get /status endpoint
+	document.addEventListener('DOMContentLoaded', () => {
+		var urlList = [];
+
+		document.querySelectorAll('.domain').forEach(domain => {
+			var url = domain.querySelector('span').innerText;
+			urlList.push(url);
+		});
+
+		// send get request to /status endpoint
+		urlList.forEach(url => {
+			fetch(`https://${url}/status`)
+				.then(response => {
+					if (response.ok) {
+						document.querySelector(`#${url.replace(/\./g, '-')}`).classList.remove('verifying');
+						document.querySelector(`#${url.replace(/\./g, '-')}`).classList.add('active');
+						document.getElementById(url.replace(/\./g, '-')).setAttribute('title', 'Online');
+					} else {
+						document.querySelector(`#${url.replace(/\./g, '-')}`).classList.remove('verifying');
+						document.querySelector(`#${url.replace(/\./g, '-')}`).classList.add('inactive');
+						document.getElementById(url.replace(/\./g, '-')).setAttribute('title', 'Offline');
+					}
+				})
+				.catch(error => {
+					// if req blocked by CORS, set as inactive
+					if (error.name === 'TypeError') {
+						document.querySelector(`#${url.replace(/\./g, '-')}`).classList.remove('verifying');
+						document.querySelector(`#${url.replace(/\./g, '-')}`).classList.add('inactive');
+						document.getElementById(url.replace(/\./g, '-')).setAttribute('title', 'Offline');
+						return;
+					}
+					document.querySelector(`#${url.replace(/\./g, '-')}`).classList.remove('verifying');
+					document.querySelector(`#${url.replace(/\./g, '-')}`).classList.add('na');
+					document.getElementById(url.replace(/\./g, '-')).setAttribute('title', 'Errore sconosciuto');
+				});
+		});
+			
+	});
+</script>

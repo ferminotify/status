@@ -1,0 +1,49 @@
+.domain, .domain *{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.dot{
+    border-radius: 50%;
+    width: 0.8em;
+    height: 0.8em;
+    margin-right: 0.5em;
+    cursor: pointer;
+}
+.dot.active{
+    /*background-color: rgb(34, 139, 73);*/
+	background-color: var(--success);
+}
+.dot.inactive{
+    /*background-color: rgb(192, 64, 64);*/
+	background-color: var(--error);
+}
+.dot.verifying{
+    background-color: rgb(221, 161, 0);
+}
+.dot.na{
+    background-color: rgb(121, 121, 121);
+}
+
+#tooltip {
+    position: absolute; /* Permet le placement dynamique près du curseur */
+    padding: .4rem .6rem;
+    background-color: var(--surface);
+    border-radius: .25rem;
+    font-size: .75em;
+    font-weight: 500;
+    color: var(--on-surface);
+    pointer-events: none; /* Désactive les événements de la souris pour le tooltip */
+    transition: transform 0.1s ease-out;
+    -webkit-transition: transform 0.1s ease-out 0s;
+    z-index: 9999; /* Assure que le tooltip apparaît au-dessus des autres éléments */
+    opacity: .96;
+}
+
+.visible {
+    visibility: visible; /* Rend le tooltip visible */
+}
+
+.invisible {
+    visibility: hidden; /* Cache le tooltip par défaut */
+}

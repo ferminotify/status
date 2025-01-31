@@ -19,23 +19,22 @@ app.set('view engine', 'ejs');
 // connect to database
 const { pool } = require("./db");
 
-// dash
 app.get('/', async (req, res) => {
     try {
         const success = req.flash('success');
         const error = req.flash('error');
-        res.render('index.ejs', { logged: req.session.isAuthenticated, success, error });
+        res.render('index.ejs', { success, error });
     } catch (error) {
         console.log(error);
         res.status(500).send('Internal server error');
     }
 });
 
-app.get('/backup', async (req, res) => {
+app.get('/notifier', async (req, res) => {
     try {
         const success = req.flash('success');
         const error = req.flash('error');
-        res.render('backup.ejs', { logged: req.session.isAuthenticated, success, error });
+        res.render('notifier.ejs', { logged: req.session.isAuthenticated, success, error });
     } catch (error) {
         console.log(error);
         res.status(500).send('Internal server error');
@@ -45,7 +44,10 @@ app.get('/backup', async (req, res) => {
 app.get('/notifier/get/status', async (req, res) => {
     // get params backup = true
     const backup = req.query.backup || false;
-    const json = await getNotifierStatus(backup);
+    const limit = req.query.limit || -1;
+    // 0 = today, 1 = yesterday, 2 = day before, ..., -1 = all
+    const dayBefore = req.query.dayBefore || -1;
+    const json = await getNotifierStatus(backup, limit, dayBefore);
     if(!req.session.isAuthenticated) {
         json.forEach(row => {
             if (row.type == "info" || row.type == "error") row.message = '*** log in to see event ***';
@@ -88,8 +90,27 @@ app.listen(PORT, () => {
 });
 
 // Function to get the notifier status
-async function getNotifierStatus(backup = false) {
-    const query = backup ? 'SELECT * FROM logs_backup_notifier ORDER BY timestamp DESC' : 'SELECT * FROM logs_notifier ORDER BY timestamp DESC';
+async function getNotifierStatus(backup = false, limit = -1, dayBefore = -1) {
+    var query = backup ? 'SELECT * FROM logs_backup_notifier' : 'SELECT * FROM logs_notifier';
+    if (limit > 0) query += ` LIMIT ${limit}`;
+    if (dayBefore >= 0) {
+        const date = new Date();
+        date.setDate(date.getDate() - dayBefore);
+        const options = {
+            timeZone: 'Europe/Rome',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            fractionalSecondDigits: 3,
+        };
+        const parts = new Intl.DateTimeFormat('it-IT', options).formatToParts(date);
+        const dateStr = `${parts.find(p => p.type === 'year').value}-${parts.find(p => p.type === 'month').value}-${parts.find(p => p.type === 'day').value}`;
+        query += ` WHERE timestamp::date = '${dateStr}'`;
+    }
+    query += ' ORDER BY timestamp DESC';
     try {
         const result = await pool.query(query);
         //console.log(result.rows);

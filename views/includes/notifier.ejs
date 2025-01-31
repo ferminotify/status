@@ -1,0 +1,112 @@
+<style>
+	/* hide console scrollbar */
+	.console-container::-webkit-scrollbar {
+		display: none;
+	}
+</style>
+
+<div class="grid-2-row-1fr-auto" style="max-height: calc(100dvh - 30px); height: 100%;">
+	<div class="console-container" style="height: 100%; max-height: none;">
+		<div class="choose-console in-console flex-space-between" style="position: sticky; top: 0; z-index: 1; border-bottom: 1px solid var(--on-surface);">
+			<div class="active" onclick="changeLogs(this)">Logs</div>
+			<div class="" onclick="changeLogs(this)">Backup</div>
+		</div>
+		<div class="console" id="notifier-console" style="width: 100%; height: auto;"></div>
+	</div>
+	<div class="console-container grid-2-col" style="text-align: center; gap:0">
+		<div style="width: 100%; padding: 10px 0; border-right: 1px solid var(--on-surface);"><span id="status"></span></div>
+		<a hreF="/notifier" class="flex-center btn notifier-dash">Notifier Dashboard <span class="material-symbols-outlined">open_in_new</span></a>
+	</div>
+</div>
+
+<script>
+	$(document).ready(function(){
+		update();
+	});
+
+	function changeLogs(el){
+		$('.choose-console div').removeClass('active');
+		$(el).addClass('active');
+		if(el.innerText == 'Logs') update();
+		else update(backup = true);
+	}
+
+	function update(backup = false){
+		// clear
+		$('#notifier-console').html('<p class="mono" style="font-size: 0.80em; margin-top:0">newest</p>');
+		// get data from /notifier/get/status and save it in response
+		var dayBefore = 0;
+		var getUrl = '/notifier/get/status?dayBefore=' + dayBefore;
+		if (backup) getUrl += '&backup=true';
+		$.get(getUrl, function(response){
+			// response is a json array
+			console.log(response);
+			// print the last data received
+			var date = new Date(response[0].timestamp);
+
+
+			var options = {timeZone: 'Europe/Rome', hour: '2-digit', minute: '2-digit', second: '2-digit'};
+			
+			clearClass();
+
+			if(dayBefore < 1){
+				// if last data is more than 10 minutes old, notifier is offline
+				var now = new Date();
+				if(now - date > 600000){
+					if(backup){
+						$('#status').html('<i class="fa-solid fa-hourglass-half muted"></i> idle');
+						$('#status').parent().addClass('surface-variant');
+					}else setOffline();
+				}else if(response[0].type == "success"){
+					console.log('Notifier is online');
+					setOnline();
+				}else if(response[0].type == "error"){
+					console.log('Notifier is offline');
+					setOffline();
+				}else{
+					console.log('Notifier is or should be running');
+					$('#status').html('<i class="fas fa-spinner info"></i> running or should be running');
+					$('#status').parent().addClass('surface-variant');
+				}
+			}
+			
+			
+			for(var i = 0; i < response.length; i++){
+				var row = $('<div class="row"></div>');
+				var timestamp = $('<div class="timestamp"></div>');
+				var type = $('<div class="type"></div>');
+				var message = $('<div class="event"></div>');
+				// format timestamp as dd/mm hh:mm:ss
+				//console.log(response[i].timestamp);
+				// convert timestamp format aaaa-mm-ggThh:mm:ss.sssZ to hh:mm:ss Rome time
+				var date = new Date(response[i].timestamp);
+				timestamp.text(date.toLocaleString('it-IT', options));
+				// format type info, success, erro to font awesome icons
+				if(response[i].type.toLowerCase() == 'info') type.html('<i class="fas fa-info-circle info"></i>');
+				else if(response[i].type.toLowerCase() == 'success') type.html('<i class="fas fa-check-circle success"></i>');
+				else if(response[i].type.toLowerCase() == 'error') type.html('<i class="fas fa-exclamation-circle error"></i>');
+				else type.text(response[i].type);
+				message.text(response[i].message);
+
+				row.append(timestamp);
+				row.append(type);
+				row.append(message);
+				$('#notifier-console').append(row);
+			}
+		});
+	}
+
+	function clearClass(){
+		$('#status').parent().removeClass('error-bg');
+		$('#status').parent().removeClass('success-bg');
+		$('#status').parent().removeClass('surface-variant');
+	}
+	function setOffline(){
+		$('#status').html('<i class="fas fa-exclamation-circle error"></i> offline');
+		$('#status').parent().addClass('error-bg');
+	}
+	function setOnline(){
+		$('#status').html('<i class="fas fa-circle success"></i> online');
+		$('#status').parent().addClass('success-bg');
+	}
+</script>
