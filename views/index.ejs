@@ -49,6 +49,8 @@
 					<div class="active" onclick="changeLogs(this)">Logs</div>
 					<div class="" onclick="changeLogs(this)">Backup</div>
 				</div>
+			</div>
+			<div class="console-container">
 				<div id="console"></div>
 			</div>
 			<p>Raw Data <button class="btn text" onclick="$('#raw-container').slideToggle(); if($(this).text() == 'Show') $(this).text('Hide'); else $(this).text('Show')"><u>Show</u></button></p>
@@ -63,18 +65,19 @@
 		function changeLogs(el){
 			$('.choose-console div').removeClass('active');
 			$(el).addClass('active');
-			if(el.innerText == 'Logs') update('status');
-			else update('backup-status');
+			if(el.innerText == 'Logs') update();
+			else update(backup = true);
 		}
 
-		function update(con = 'status'){
+		function update(backup = false){
 			$('.fa-sync-alt').addClass('spin');
 			// clear
 			$('#console').html('<p class="mono" style="font-size: 0.80em;">newest</p>');
 			$('#raw').text('');
 			$('#refresh-time').text(new Date().toLocaleString());
 			// get data from /notifier/get/status and save it in response
-			var getUrl = "/notifier/get/" + con;
+			var getUrl = '/notifier/get/status';
+			if (backup) getUrl += '?backup=true';
 			$.get(getUrl, function(response){
 				// response is a json array
 				console.log(response);
@@ -86,11 +89,14 @@
 				
 				
 				$('#last-data').text(date.toLocaleString('it-IT', options));
-				// if the last action is 1, then the notifier is online
-				if(response[0].type == "success"){
+				// if last data is more than 10 minutes old, notifier is offline
+				var now = new Date();
+				if(now - date > 600000){
+					if(backup) $('#status').html('<i class="fa-solid fa-hourglass-half muted"></i> idle');
+					else $('#status').html('<i class="fas fa-exclamation-circle err"></i> offline');
+				}else if(response[0].type == "success"){
 					console.log('Notifier is online');
 					$('#status').html('<i class="fas fa-circle success"></i> online');
-				// if the last action is -1, then the notifier has encountered an error
 				}else if(response[0].type == "error"){
 					console.log('Notifier is offline');
 					$('#status').html('<i class="fas fa-exclamation-circle err"></i> offline');

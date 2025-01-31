@@ -43,20 +43,12 @@ app.get('/backup', async (req, res) => {
 });
 
 app.get('/notifier/get/status', async (req, res) => {
-    const json = await getNotifierStatus();
+    // get params backup = true
+    const backup = req.query.backup || false;
+    const json = await getNotifierStatus(backup);
     if(!req.session.isAuthenticated) {
         json.forEach(row => {
-            if (row.info) row.message = '*** log in to see event ***';
-        });
-    }
-    res.json(json);
-});
-
-app.get('/notifier/get/backup-status', async (req, res) => {
-    const json = await getNotifierStatus(true);
-    if(!req.session.isAuthenticated) {
-        json.forEach(row => {
-            if (row.info) row.message = '*** log in to see event ***';
+            if (row.type == "info" || row.type == "error") row.message = '*** log in to see event ***';
         });
     }
     res.json(json);
