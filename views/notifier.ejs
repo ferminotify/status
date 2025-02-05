@@ -76,8 +76,8 @@
 			$('#raw').text('');
 			$('#refresh-time').text(new Date().toLocaleString());
 			// get data from /notifier/get/status and save it in response
-			var getUrl = '/notifier/get/status';
-			if (backup) getUrl += '?backup=true';
+			var getUrl = '/notifier/get/status?limit=150';
+			if (backup) getUrl += '&backup=true';
 			$.get(getUrl, function(response){
 				// response is a json array
 				console.log(response);
