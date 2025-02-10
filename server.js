@@ -18,6 +18,7 @@ const PORT = process.env.PORT || 3000;
 app.set('view engine', 'ejs');
 // connect to database
 const { pool } = require("./db");
+const { error } = require('console');
 
 app.get('/', async (req, res) => {
     try {
@@ -35,6 +36,15 @@ app.get('/notifier', async (req, res) => {
         const success = req.flash('success');
         const error = req.flash('error');
         res.render('notifier.ejs', { logged: req.session.isAuthenticated, success, error });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Internal server error');
+    }
+});
+
+app.get('/login', async (req, res) => {
+    try {
+        res.render('login.ejs', { logged: req.session.isAuthenticated });
     } catch (error) {
         console.log(error);
         res.status(500).send('Internal server error');

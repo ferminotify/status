@@ -27,6 +27,7 @@
 	});
 
 	function changeLogs(el){
+		$('#notifier-console').html('');
 		$('.choose-console div').removeClass('active');
 		$(el).addClass('active');
 		if(el.innerText == 'Logs') update();
@@ -39,9 +40,15 @@
 		var getUrl = '/notifier/get/status?limit=150&';
 		if (backup) getUrl += 'backup=true';
 		else getUrl += 'dayBefore=' + dayBefore;
-		$.get(getUrl, function(response){
+		$.get(getUrl, function(response){			
 			// response is a json array
 			console.log(response);
+
+			if(response.length == 0){
+				setOffline();
+				return;
+			}
+
 			// print the last data received
 			var date = new Date(response[0].timestamp);
 

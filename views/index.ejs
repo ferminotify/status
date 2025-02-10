@@ -13,14 +13,14 @@
 	<link rel="stylesheet" href="/css/alertbanner.css"/>
 	<link rel="stylesheet" href="/css/btn.css"/>
 	<link rel="stylesheet" href="/css/mirror.css"/>
-	<link rel="stylesheet" href="/css/summary.css"/>
+	<link rel="stylesheet" href="/css/webapp.css"/>
 </head>
 <body>
 	<div class="container" style="width: 100%; height: 100dvh;">
 		<div class="grid-2-col container-2-block" style="height: 100%; margin: 15px; gap: 15px;">
-			<div class="grid-2-row-1fr-auto webapp" style="height: 100%; width: 100%;">
-				<div class="summary" style="width: 100%; height: 100%;">
-					<%- include('includes/summary.ejs'); %>	
+			<div class="grid-2-row-1fr-auto webapp" style="height: 100%; width: 100%; max-height: calc(100dvh - 30px);">
+				<div class="webapp" style="width: 100%; height: 100%;">
+					<%- include('includes/webapp.ejs'); %>	
 				</div>
 				<div class="mirror" style="width: 100%;">
 					<%- include('includes/mirror.ejs'); %>
