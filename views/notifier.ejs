@@ -11,6 +11,12 @@
 	<script src="https://kit.fontawesome.com/95ae55bd9a.js" crossorigin="anonymous"></script>
 	<link rel="stylesheet" href="/css/style.css" />
 	<link rel="stylesheet" href="/css/alertbanner.css" />
+	<style>
+		.console-container{
+			max-height: 75vh;
+			max-height: 75dvh;
+		}
+	</style>
 </head>
 <body>
 	<div class="container">
@@ -44,14 +50,14 @@
 					<% } %>
 				</div>
 			</div>
-			<div class="console-container">
-				<div class="in-console choose-console flex-space-between">
+			<div class="console-container" style="height: 100%;">
+				<div class="choose-console in-console flex-space-between" style="position: sticky; top: 0; z-index: 1; border-bottom: 1px solid var(--on-surface);">
 					<div class="active" onclick="changeLogs(this)">Logs</div>
 					<div class="" onclick="changeLogs(this)">Backup</div>
 				</div>
-			</div>
-			<div class="console-container">
-				<div class="console" id="console"></div>
+				<div>
+					<div class="console" id="console" style="width: 100%; height: auto;"></div>
+				</div>
 			</div>
 			<p>Raw Data <button class="btn text" onclick="$('#raw-container').slideToggle(); if($(this).text() == 'Show') $(this).text('Hide'); else $(this).text('Show')"><u>Show</u></button></p>
 			<div class="console-container" id="raw-container"><pre id="raw"></pre></div>
@@ -76,7 +82,7 @@
 			$('#raw').text('');
 			$('#refresh-time').text(new Date().toLocaleString());
 			// get data from /notifier/get/status and save it in response
-			var getUrl = '/notifier/get/status?limit=150';
+			var getUrl = '/notifier/get/status?limit=100';
 			if (backup) getUrl += '&backup=true';
 			$.get(getUrl, function(response){
 				// response is a json array
@@ -85,7 +91,7 @@
 				var date = new Date(response[0].timestamp);
 
 
-				var options = {timeZone: 'Europe/Rome', hour: '2-digit', minute: '2-digit', second: '2-digit'};
+				var options = {timeZone: 'Europe/Rome', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'};
 				
 				
 				$('#last-data').text(date.toLocaleString('it-IT', options));
@@ -127,7 +133,7 @@
 					//console.log(response[i].timestamp);
 					// convert timestamp format aaaa-mm-ggThh:mm:ss.sssZ to hh:mm:ss Rome time
 					var date = new Date(response[i].timestamp);
-					timestamp.text(date.toLocaleString('it-IT', options));
+					timestamp.text(date.toLocaleString('it-IT', options).replace(',', ' '));
 					// format type info, success, error to font awesome icons
 					if(response[i].type.toLowerCase() == 'info') type.html('<i class="fas fa-info-circle info"></i>');
 					else if(response[i].type.toLowerCase() == 'success') type.html('<i class="fas fa-check-circle success"></i>');
