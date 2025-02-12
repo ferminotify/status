@@ -35,9 +35,9 @@
 	}
 
 	function update(backup = false){
-		// get data from /notifier/get/status and save it in response
+		// get data from /notifier/get/logs and save it in response
 		var dayBefore = 0;
-		var getUrl = '/notifier/get/status?limit=150&';
+		var getUrl = '/notifier/get/logs?limit=150&';
 		if (backup) getUrl += 'backup=true';
 		else getUrl += 'dayBefore=' + dayBefore;
 		$.get(getUrl, function(response){			

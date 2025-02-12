@@ -13,7 +13,7 @@ app.use(flash());
 app.use(express.urlencoded({ extended: false }));
 app.use(session({ secret: process.env.SESSION_SECRET, resave: false, saveUninitialized: false }));
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 // ejs
 app.set('view engine', 'ejs');
 // connect to database
@@ -51,7 +51,7 @@ app.get('/login', async (req, res) => {
     }
 });
 
-app.get('/notifier/get/status', async (req, res) => {
+app.get('/notifier/get/logs', async (req, res) => {
     // get params backup = true
     const backup = req.query.backup || false;
     const limit = req.query.limit || -1;
@@ -64,6 +64,27 @@ app.get('/notifier/get/status', async (req, res) => {
         });
     }
     res.json(json);
+});
+
+app.get('/notifier/get/status', async (req, res) => {
+    const backup = req.query.backup || false;
+    const limit = 1;
+    const json = await getNotifierStatus(backup, limit);
+    const lastLog = json[0];
+    const now = new Date();
+    const lastLogDate = new Date(lastLog.timestamp);
+    // CORS allow from fn.lkev.in and ferminotify.lkev.in and ferminotify.sirico.dev and localhost
+    res.header("Access-Control-Allow-Origin", "https://fn.lkev.in");
+    res.header("Access-Control-Allow-Origin", "https://ferminotify.lkev.in");
+    res.header("Access-Control-Allow-Origin", "https://ferminotify.sirico.dev");
+    res.header("Access-Control-Allow-Methods", "GET");
+    res.header("Access-Control-Allow-Headers", "Content-Type");
+    if (now - lastLogDate > 600000) {
+        if(backup) return res.json({ status: 'idle' });
+        res.json({ status: 'error' });
+    } else {
+        res.json({ status: lastLog.type });
+    }
 });
 
 app.get('/webapp/get/stats', async (req, res) => {
