@@ -75,9 +75,6 @@ app.get('/notifier/get/status', async (req, res) => {
     const lastLogDate = new Date(lastLog.timestamp);
     // CORS allow from fn.lkev.in and ferminotify.lkev.in and ferminotify.sirico.dev and localhost
     res.header("Access-Control-Allow-Origin", "https://fn.lkev.in");
-    res.header("Access-Control-Allow-Origin", "https://ferminotify.lkev.in");
-    res.header("Access-Control-Allow-Origin", "https://ferminotify.sirico.dev");
-    res.header("Access-Control-Allow-Origin", "http://localhost:10000");
     res.header("Access-Control-Allow-Methods", "GET");
     res.header("Access-Control-Allow-Headers", "Content-Type");
     if (now - lastLogDate > 600000) {
