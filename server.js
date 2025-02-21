@@ -136,6 +136,16 @@ app.get("/webapp/get/logs", async (req, res) => {
     res.json(json);
 });
 
+app.get('/db/get/status', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT NOW()');
+        res.json({ status: 'ok' });
+    } catch (error) {
+        console.error('[ERR] Database query failed:', error.message);
+        res.json({ status: 'error' });
+    }
+});
+
 app.post('/login', (req, res) => {
     const psw = req.body.password;
     console.log("Sent: " + psw);
